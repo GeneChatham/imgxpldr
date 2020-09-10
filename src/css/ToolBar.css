@@ -1,0 +1,26 @@
+/* ToolBar.css */
+
+#toolBar {
+  display: flex;
+  justify-content: space-evenly;
+  color: white;
+  font-size: calc(10px + 2vmin);
+  margin-bottom: 10px;
+}
+
+.toolBarButton {
+  border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  padding: 10px 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.toolBarButton:active {
+  background-color: #CCCCCC;
+  color: #2d4c88
+}
+
+#undoArrow {
+  font-size: 1em;
+}

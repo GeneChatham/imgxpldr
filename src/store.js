@@ -9,15 +9,15 @@ const loggerMiddleware = createLogger();
 
 // create an object for the default data
 
-const defaultState = {
-	app: {
-    geneiscool: true
-	}
-};
+// const defaultState = {
+// 	app: {
+//     geneiscool: true
+// 	}
+// };
 
 const store = createStore(
 	rootReducer,
-	defaultState,
+	// defaultState,
 	applyMiddleware(
 		loggerMiddleware
 	)

@@ -1,0 +1,19 @@
+/* SizeAndPaper.css */
+
+.sizeAndPaper {
+  width: 300px;
+}
+
+.imgSizeInput {
+  margin-left: 1em;
+}
+
+.widthHeightInputs {
+  display: flex;
+}
+
+.innerWidthHeight {
+  width: 220px;
+  display: flex;
+  justify-content: space-between;
+}

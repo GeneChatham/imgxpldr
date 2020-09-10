@@ -1,20 +1,21 @@
 import React from "react";
+
+import * as imageHelpers from "../helpers/imageHelpers";
 import "../css/FileSelector.css";
 
 class FileSelector extends React.Component {
   constructor(props) {
     super(props);
-    this.handleInput = this.handleInput.bind(this);
     this.fileInput = React.createRef();
   }
 
-  handleInput(event) {
+  handleInput = event => {
     event.preventDefault();
-    if(this.fileInput.current.files) {
-      console.log(`Selected file - ${this.fileInput.current.files[0].name}`);
-      console.log(this.fileInput.current.files[0]);
+    if (this.fileInput.current.files.length > 0) {
+      const file = this.fileInput.current.files[0];
+      imageHelpers.loadFile(this.props.dispatch, file);
     }
-  }
+  };
 
   render() {
     return (
