@@ -27,7 +27,7 @@ class SizeAndPaper extends React.Component {
           </select>
         </div>
         <div>
-          aspect ratio: ~{aspectRatio.toFixed(2)}
+          img aspect ratio: ~{aspectRatio.toFixed(2)}
           <br />
           xpld'd img size:
           <br />
@@ -73,6 +73,9 @@ class SizeAndPaper extends React.Component {
               &nbsp;{this.props.app.posterUnits}
             </div>
           </div>
+        </div>
+        <div id="applyButton" onClick={this.props.fitToPoster}>
+          apply
         </div>
       </div>
     );

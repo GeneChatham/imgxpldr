@@ -17,3 +17,18 @@
   display: flex;
   justify-content: space-between;
 }
+
+#applyButton {
+  margin-top: 1em;
+  width: 200px;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  padding: 10px 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+#applyButton:active {
+  background-color: #cccccc;
+  color: #2d4c88;
+}

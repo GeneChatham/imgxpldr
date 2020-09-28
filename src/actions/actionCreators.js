@@ -35,6 +35,15 @@ export function drawPreview() {
   };
 }
 
+// use the new paper and poster size data to 
+// embiggen the image
+export const FIT_TO_POSTER = "FIT_TO_POSTER";
+export function fitToPoster() {
+  return {
+    type: FIT_TO_POSTER
+  }
+}
+
 // load the selected file for processing
 export const LOAD_FILE = "LOAD_FILE";
 export function loadFile(file, data, message) {

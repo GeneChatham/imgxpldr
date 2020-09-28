@@ -8,12 +8,12 @@ class Preview extends React.Component {
   componentDidMount() {
     // console.log(`canvas mounted!`);
     this.props.connectCanvas(document.getElementById("hiddenCanvas"), "hidden");
-    // this.props.connectCanvas(
-    //   document.getElementById("previewCanvas"),
-    //   "preview"
-    // );
+    this.props.connectCanvas(
+      document.getElementById("previewCanvas"),
+      "preview"
+    );
     this.props.drawHidden();
-    // this.props.drawPreview();
+    this.props.drawPreview();
   }
 
   componentDidUpdate(prevProps) {
@@ -21,10 +21,10 @@ class Preview extends React.Component {
     // viewport size has changed.
     if (
       prevProps.app.currentImage !== this.props.app.currentImage ||
-      prevProps.app.displayCanvasSize.w !== this.props.app.displayCanvasSize.w
+      prevProps.app.viewportWidth !== this.props.app.viewportWidth
     ) {
       this.props.drawHidden();
-      // this.props.drawPreview();
+      this.props.drawPreview();
     }
   }
 
@@ -37,13 +37,13 @@ class Preview extends React.Component {
           width={this.props.app.hiddenCanvasSize.w}
           height={this.props.app.hiddenCanvasSize.h}
         ></canvas>
-        {/* <canvas
+        <canvas
           id="previewCanvas"
-          width={this.props.app.displayCanvasSize.w}
-          height={this.props.app.displayCanvasSize.h}
+          width={this.props.app.previewCanvasSize.w}
+          height={this.props.app.previewCanvasSize.h}
         >
           preview image here
-        </canvas> */}
+        </canvas>
       </div>
     );
   }

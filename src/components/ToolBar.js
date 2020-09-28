@@ -21,7 +21,7 @@ class ToolBar extends React.Component {
   };
 
   getToolset = (toolsetName) => {
-    console.log(`getting toolset ${toolsetName}...`);
+    // console.log(`getting toolset ${toolsetName}...`);
     const undo = (
       <div className="toolBarButton" onClick={this.undoHandler}>
         <span id="undoArrow">{"\u293a "}</span>

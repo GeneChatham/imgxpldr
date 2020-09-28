@@ -6,6 +6,7 @@ import {
   CONNECT_CANVAS,
   DRAW_PREVIEW,
   DRAW_HIDDEN,
+  FIT_TO_POSTER,
   LOAD_FILE,
   LOAD_ORIGINAL_IMAGE,
   ROTATE_IMAGE,
@@ -48,15 +49,13 @@ function applyUndone(imageData, ctx, canvas) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-function calcCanvasSize(vw, vh, img) {
+function calcCanvasSize(vw, vh, imgWidth, imgHeight) {
+  console.log(`imgWidth: ${imgWidth}`);
+  console.log(`imgHeight: ${imgHeight}`);
   let result = { w: 0, h: 0 };
-  if (img !== undefined) {
-    result = {
-      w: 0,
-      h: 0,
-    };
+  if (imgWidth !== undefined) {
     const viewportAR = vw / vh;
-    const imageAR = img.width / img.height;
+    const imageAR = imgWidth / imgHeight;
     if (viewportAR >= imageAR) {
       // limiting size is viewport height
       result.h = vh * 0.9;
@@ -81,8 +80,21 @@ function drawHidden(ctx, img) {
   return drawnPixels;
 }
 
-function drawPreview(ctx, img, canvasSize) {
-  ctx.drawImage(img, 0, 0, canvasSize.w, canvasSize.h);
+function drawPreview(previewCTX, hiddenCanvas, canvasSize) {
+  previewCTX.drawImage(hiddenCanvas, 0, 0, canvasSize.w, canvasSize.h);
+}
+
+function fitToPoster(ctx, posterWidth, posterHeight, posterUnits, canvas) {
+  const fittedPixels = transforms.fitToPoster(
+    ctx,
+    posterWidth,
+    posterHeight,
+    posterUnits
+  );
+  // canvas.width = fittedPixels.width;
+  // canvas.height = fittedPixels.height;
+  ctx.putImageData(fittedPixels, 0, 0);
+  return fittedPixels;
 }
 
 function rotateImage(pixels, ctx, canvas) {
@@ -93,6 +105,10 @@ function rotateImage(pixels, ctx, canvas) {
   canvas.height = oldw;
   ctx.putImageData(rotatedPixels, 0, 0);
   return rotatedPixels;
+}
+
+function matchPreviewToHidden(previewCanvas, hiddenCanvas) {
+
 }
 
 function app(state = {}, action) {
@@ -124,9 +140,19 @@ function app(state = {}, action) {
       drawPreview(
         state.previewCTX,
         state.hiddenCanvas,
-        state.displayCanvasSize
+        state.previewCanvasSize
       );
       return state;
+    case FIT_TO_POSTER:
+      return Object.assign({}, state, {
+        hiddenPixels: fitToPoster(
+          state.hiddenCTX,
+          state.posterWidth,
+          state.posterHeight,
+          state.posterUnits,
+          state.hiddenCanvas
+        ),
+      });
     case LOAD_FILE:
       return Object.assign({}, state, {
         file: action.file,
@@ -135,10 +161,11 @@ function app(state = {}, action) {
     case LOAD_ORIGINAL_IMAGE:
       return Object.assign({}, state, {
         currentImage: action.img,
-        displayCanvasSize: calcCanvasSize(
+        previewCanvasSize: calcCanvasSize(
           state.viewportWidth,
           state.viewportHeight,
-          action.img
+          action.img.width,
+          action.img.height
         ),
         hiddenCanvasSize: { w: action.img.width, h: action.img.height },
         message: null,
@@ -157,6 +184,12 @@ function app(state = {}, action) {
         state.hiddenCanvas
       );
       return Object.assign({}, state, {
+        previewCanvasSize: calcCanvasSize(
+          state.viewportWidth,
+          state.viewportHeight,
+          state.hiddenCanvas.width,
+          state.hiddenCanvas.height
+        ),
         hiddenPixels: rotated,
         saveStack: state.saveStack.concat([rotated]),
       });
@@ -170,13 +203,17 @@ function app(state = {}, action) {
         currentImage: null,
       });
     case SET_VIEWPORT_SIZE:
+      const tempImgSize = state.currentImage
+        ? { w: state.currentImage.width, h: state.currentImage.height }
+        : { w: undefined, h: undefined };
       return Object.assign({}, state, {
         viewportWidth: action.vw,
         viewportHeight: action.vh,
-        displayCanvasSize: calcCanvasSize(
+        previewCanvasSize: calcCanvasSize(
           action.vw,
           action.vh,
-          state.currentImage
+          tempImgSize.w,
+          tempImgSize.h
         ),
       });
     case UNDO:
@@ -197,10 +234,8 @@ function app(state = {}, action) {
     case UPDATE_POSTER_HEIGHT:
       const linkedWidth =
         action.val * (state.hiddenPixels.width / state.hiddenPixels.height);
-      console.log("linkedWidth:");
-      console.log(linkedWidth);
       return Object.assign({}, state, {
-        posterHeight: action.val,
+        posterHeight: +action.val,
         posterWidth: linkedWidth.toFixed(2),
       });
     case UPDATE_POSTER_UNITS:
@@ -210,11 +245,9 @@ function app(state = {}, action) {
     case UPDATE_POSTER_WIDTH:
       const linkedHeight =
         action.val / (state.hiddenPixels.width / state.hiddenPixels.height);
-      console.log("linkedHeight:");
-      console.log(linkedHeight);
       return Object.assign({}, state, {
         posterHeight: linkedHeight.toFixed(2),
-        posterWidth: action.val,
+        posterWidth: +action.val,
       });
     default:
       return state;
