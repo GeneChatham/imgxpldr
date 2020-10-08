@@ -50,8 +50,8 @@ class App extends React.Component {
         {this.props.app.message && (
           <BadFileMessage message={this.props.app.message} />
         )}
-        {this.props.app.currentImage && <Preview {...this.props} />}
-        {this.props.app.currentImage && <ToolTabs {...this.props} />}
+        {this.props.app.currentPixels && <Preview {...this.props} />}
+        {this.props.app.currentPixels && <ToolTabs {...this.props} />}
         {this.props.app.toolset && <ToolBar {...this.props} />}
       </div>
     );

@@ -9,31 +9,31 @@ export function applyFilter(filterName) {
   };
 }
 
-// set the DOM element for a canvas
-export const CONNECT_CANVAS = "CONNECT_CANVAS";
-export function connectCanvas(element, name) {
-  return {
-    type: CONNECT_CANVAS,
-    element,
-    name,
-  };
-}
+// // set the DOM element for a canvas
+// export const CONNECT_CANVAS = "CONNECT_CANVAS";
+// export function connectCanvas(element, name) {
+//   return {
+//     type: CONNECT_CANVAS,
+//     element,
+//     name,
+//   };
+// }
 
-// signal the reducer to draw the hidden canvas
-export const DRAW_HIDDEN = "DRAW_HIDDEN";
-export function drawHidden() {
-  return {
-    type: DRAW_HIDDEN,
-  };
-}
+// // signal the reducer to draw the hidden canvas
+// export const DRAW_HIDDEN = "DRAW_HIDDEN";
+// export function drawHidden() {
+//   return {
+//     type: DRAW_HIDDEN,
+//   };
+// }
 
-// signal the reducer to draw the preview canvas
-export const DRAW_PREVIEW = "DRAW_PREVIEW";
-export function drawPreview() {
-  return {
-    type: DRAW_PREVIEW,
-  };
-}
+// // signal the reducer to draw the preview canvas
+// export const DRAW_PREVIEW = "DRAW_PREVIEW";
+// export function drawPreview() {
+//   return {
+//     type: DRAW_PREVIEW,
+//   };
+// }
 
 // use the new paper and poster size data to 
 // embiggen the image
@@ -56,11 +56,10 @@ export function loadFile(file, data, message) {
 }
 
 export const LOAD_ORIGINAL_IMAGE = "LOAD_ORIGINAL_IMAGE";
-export function loadOriginalImage(img, metadata) {
+export function loadOriginalImage(img, imageData) {
   return {
     type: LOAD_ORIGINAL_IMAGE,
     img,
-    metadata,
   };
 }
 
