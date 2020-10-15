@@ -26,7 +26,11 @@ import * as transforms from "../helpers/transforms";
 
 function applyFilter(pixels, filter) {
   let filteredPixels = null;
-  const pixelsCopy = new ImageData(new Uint8ClampedArray(pixels.data), pixels.width, pixels.height);
+  const pixelsCopy = new ImageData(
+    new Uint8ClampedArray(pixels.data),
+    pixels.width,
+    pixels.height
+  );
   switch (filter) {
     case "GRAYSCALE":
       filteredPixels = filters.grayscale(pixelsCopy);
@@ -57,16 +61,13 @@ function calcCanvasSize(vw, vh, imgWidth, imgHeight) {
   return result;
 }
 
-function fitToPoster(ctx, posterWidth, posterHeight, posterUnits, canvas) {
+function fitToPoster(pixels, posterWidth, posterHeight, posterUnits) {
   const fittedPixels = transforms.fitToPoster(
-    ctx,
+    pixels,
     posterWidth,
     posterHeight,
     posterUnits
   );
-  // canvas.width = fittedPixels.width;
-  // canvas.height = fittedPixels.height;
-  ctx.putImageData(fittedPixels, 0, 0);
   return fittedPixels;
 }
 
@@ -82,34 +83,27 @@ function loadPixels(img) {
 
 function rotateImage(pixels) {
   const rotatedPixels = transforms.rotate(pixels);
-  // const oldw = canvas.width;
-  // const oldh = canvas.height;
-  // canvas.width = oldh;
-  // canvas.height = oldw;
-  // ctx.putImageData(rotatedPixels, 0, 0);
   return rotatedPixels;
 }
 
 function app(state = {}, action) {
   switch (action.type) {
     case APPLY_FILTER:
-      const filtered = applyFilter(
-        state.currentPixels,
-        action.filterName,
-      );
+      const filtered = applyFilter(state.currentPixels, action.filterName);
       return Object.assign({}, state, {
         currentPixels: filtered,
         saveStack: state.saveStack.concat([filtered]),
       });
     case FIT_TO_POSTER:
+      const fitted = fitToPoster(
+        state.currentPixels,
+        state.posterWidth,
+        state.posterHeight,
+        state.posterUnits
+      );
       return Object.assign({}, state, {
-        hiddenPixels: fitToPoster(
-          state.hiddenCTX,
-          state.posterWidth,
-          state.posterHeight,
-          state.posterUnits,
-          state.hiddenCanvas
-        ),
+        currentPixels: fitted,
+        saveStack: state.saveStack.concat([fitted]),
       });
     case LOAD_FILE:
       return Object.assign({}, state, {
@@ -199,7 +193,7 @@ function app(state = {}, action) {
       });
     case UPDATE_POSTER_HEIGHT:
       const linkedWidth =
-        action.val * (state.hiddenPixels.width / state.hiddenPixels.height);
+        action.val * (state.currentPixels.width / state.currentPixels.height);
       return Object.assign({}, state, {
         posterHeight: +action.val,
         posterWidth: linkedWidth.toFixed(2),
@@ -210,7 +204,7 @@ function app(state = {}, action) {
       });
     case UPDATE_POSTER_WIDTH:
       const linkedHeight =
-        action.val / (state.hiddenPixels.width / state.hiddenPixels.height);
+        action.val / (state.currentPixels.width / state.currentPixels.height);
       return Object.assign({}, state, {
         posterHeight: linkedHeight.toFixed(2),
         posterWidth: +action.val,

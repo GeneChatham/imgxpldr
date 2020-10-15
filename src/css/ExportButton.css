@@ -1,0 +1,18 @@
+.exportButtonWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.exportButton {
+  color: white;
+  border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  padding: 10px 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.exportButton:active {
+  background-color: #CCCCCC;
+  color: #2d4c88
+}

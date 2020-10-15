@@ -89,20 +89,16 @@ const unpackBigPixels = (
 };
 
 // Embiggen the image to fit the desired poster size.
-// Use 300ppi for printing.
-export const fitToPoster = (ctx, posterWidth, posterHeight, units) => {
+// Use 72ppi for now.
+// Later use 300ppi for printing?
+export const fitToPoster = (pixels, posterWidth, posterHeight, units) => {
   console.log(
     `fitting to poster - w:${posterWidth}, h:${posterHeight}, ${units}...`
   );
-  const tempPixels = ctx.getImageData(
-    0,
-    0,
-    ctx.canvas.width,
-    ctx.canvas.height
-  );
+  const tempPixels = new ImageData(new Uint8ClampedArray(pixels.data), pixels.width, pixels.height);
   // convert to inches if needed
   const targetWidth = units === "inches" ? posterWidth : posterWidth / 2.54;
-  const pixelsWidth = targetWidth * 300;
+  const pixelsWidth = targetWidth * 72;
   const scaleFactor = Math.floor(pixelsWidth / tempPixels.width);
   const actualWidth = tempPixels.width * scaleFactor;
   const actualHeight = tempPixels.height * scaleFactor;

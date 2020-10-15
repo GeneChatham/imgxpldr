@@ -11,7 +11,7 @@ class SizeAndPaper extends React.Component {
 
   render() {
     const aspectRatio =
-      this.props.app.hiddenPixels.width / this.props.app.hiddenPixels.height;
+      this.props.app.currentPixels.width / this.props.app.currentPixels.height;
     return (
       <div className="sizeAndPaper">
         <div>
