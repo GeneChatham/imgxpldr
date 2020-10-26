@@ -54,7 +54,7 @@ class App extends React.Component {
         {this.props.app.currentPixels && <Preview {...this.props} />}
         {this.props.app.currentPixels && <ToolTabs {...this.props} />}
         {this.props.app.toolset && <ToolBar {...this.props} />}
-        {this.props.app.currentPixels && <ExportButton/>}
+        {this.props.app.currentPixels && <ExportButton makePDF={this.props.makePDF}/>}
       </div>
     );
   }

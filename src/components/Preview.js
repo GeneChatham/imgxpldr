@@ -21,7 +21,8 @@ class Preview extends React.Component {
     // viewport size has changed.
     if (
       prevProps.app.saveStack.length !== this.props.app.saveStack.length ||
-      prevProps.app.viewportWidth !== this.props.app.viewportWidth
+      prevProps.app.viewportWidth !== this.props.app.viewportWidth ||
+      prevProps.app.pdfCanvas !== this.props.app.pdfCanvas
     ) {
       this.drawHidden();
       this.drawPreview();
@@ -38,16 +39,23 @@ class Preview extends React.Component {
     // hiddenCanvas.width = this.props.app.currentPixels.width;
     // hiddenCanvas.height = this.props.app.currentPixels.height;
     // hiddenCTX.setTransform(2, 0, 0, 2, 0, 0);
-    hiddenCTX.putImageData(this.props.app.currentPixels, 0, 0);
+    if (this.props.app.pdfCanvas !== undefined) {
+      console.log(`should display poster preview...`);
+      hiddenCanvas.width = this.props.app.pdfCanvas.width;
+      hiddenCanvas.height = this.props.app.pdfCanvas.height;
+      hiddenCTX.drawImage(this.props.app.pdfCanvas, 0, 0);
+    } else {
+      hiddenCTX.putImageData(this.props.app.currentPixels, 0, 0);
+    }
     // hiddenCTX.drawImage(this.props.app.originalImage, 0, 0);
   }
 
   drawPreview() {
-    const hiddenCanvas = document.getElementById("hiddenCanvas");
     const previewCanvas = document.getElementById("previewCanvas");
     previewCanvas.width = this.props.app.previewWidth;
     previewCanvas.height = this.props.app.previewHeight;
-    const scaleFactor = previewCanvas.width / this.props.app.currentPixels.width;
+    const scaleFactor =
+      previewCanvas.width / this.props.app.currentPixels.width;
     const previewCTX = previewCanvas.getContext("2d");
     previewCTX.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
     // previewCTX.putImageData(this.props.app.currentPixels, 0, 0);

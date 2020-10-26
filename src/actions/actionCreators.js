@@ -63,6 +63,13 @@ export function loadOriginalImage(img, imageData) {
   };
 }
 
+export const MAKE_PDF = "MAKE_PDF";
+export function makePDF() {
+  return {
+    type: MAKE_PDF
+  }
+}
+
 export const ROTATE_IMAGE = "ROTATE_IMAGE";
 export function rotateImage() {
   return {
