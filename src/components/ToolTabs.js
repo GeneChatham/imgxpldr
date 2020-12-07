@@ -23,12 +23,6 @@ class ToolTabs extends React.Component {
     return (
       <div id="toolTabs">
         <div
-          className={sizePaperClass}
-          onClick={this.props.selectTools.bind(null, "SIZE/PAPER")}
-        >
-          size/paper
-        </div>
-        <div
           className={rotateCropClass}
           onClick={this.props.selectTools.bind(null, "ROTATE/CROP")}
         >
@@ -39,6 +33,12 @@ class ToolTabs extends React.Component {
           onClick={this.props.selectTools.bind(null, "FILTERS")}
         >
           filters
+        </div>
+        <div
+          className={sizePaperClass}
+          onClick={this.props.selectTools.bind(null, "SIZE/PAPER")}
+        >
+          size/paper
         </div>
       </div>
     );

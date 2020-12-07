@@ -10,25 +10,28 @@ class SizeAndPaper extends React.Component {
   }
 
   render() {
-    const aspectRatio =
-      this.props.app.currentPixels.width / this.props.app.currentPixels.height;
     return (
       <div className="sizeAndPaper">
         <div>
-          printer paper size:&nbsp;
-          <select
-            value={this.props.app.paperSize}
-            onChange={this.props.updatePaperSize}
-          >
-            <option value="8.5x11">Letter - 8.5" x 11"</option>
-            <option value="8.5x14">Legal - 8.5" x 14"</option>
-            <option value="11x17">Tabloid - 11" x 17"</option>
-            <option value="A4">A4 - 8.3" x 11.7"</option>
-          </select>
-        </div>
-        <div>
-          img aspect ratio: ~{aspectRatio.toFixed(2)}
-          <br />
+          <div className="sizeBlurb">
+            Your original image is {this.props.app.originalImage.width} pixels
+            wide by {this.props.app.originalImage.height} pixels high. Printed
+            at 150dpi, your original image would print to a size of{" "}
+            {(this.props.app.originalImage.width / 150).toFixed(2)}"(w) x{" "}
+            {(this.props.app.originalImage.height / 150).toFixed(2)}"(h).
+          </div>
+          <div>
+            printer paper size:&nbsp;
+            <select
+              value={this.props.app.paperSize}
+              onChange={this.props.updatePaperSize}
+            >
+              <option value="8.5x11">Letter - 8.5" x 11"</option>
+              <option value="8.5x14">Legal - 8.5" x 14"</option>
+              <option value="11x17">Tabloid - 11" x 17"</option>
+              <option value="A4">A4 - 8.3" x 11.7"</option>
+            </select>
+          </div>
           xpld'd img size:
           <br />
           <div className="imgSizeInput">
@@ -44,9 +47,7 @@ class SizeAndPaper extends React.Component {
             <br />
             <div className="widthHeightInputs">
               <div className="innerWidthHeight">
-                <div>
-                  width:
-                </div>
+                <div>width:</div>
                 <div>
                   <input
                     type="text"
@@ -59,9 +60,7 @@ class SizeAndPaper extends React.Component {
             </div>
             <div className="widthHeightInputs">
               <div className="innerWidthHeight">
-                <div>
-                  height:
-                </div>
+                <div>height:</div>
                 <div>
                   <input
                     type="text"
@@ -74,9 +73,12 @@ class SizeAndPaper extends React.Component {
             </div>
           </div>
         </div>
-        <div id="applyButton" onClick={this.props.fitToPoster}>
-          apply
+        <div className="exportButton" onClick={this.props.makePDF}>
+          make pdf
         </div>
+        {/* <div id="applyButton" onClick={this.props.fitToPoster}>
+          apply
+        </div> */}
       </div>
     );
   }

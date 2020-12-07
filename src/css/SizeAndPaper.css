@@ -32,3 +32,25 @@
   background-color: #cccccc;
   color: #2d4c88;
 }
+
+.sizeBlurb {
+  border: 1px solid lightgrey;
+  border-radius: 5px;
+  padding: 0.5em;
+  margin: 0.5em 0;
+}
+
+.exportButton {
+  color: white;
+  border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  margin-top: 15px;
+  padding: 10px 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.exportButton:active {
+  background-color: #CCCCCC;
+  color: #2d4c88
+}

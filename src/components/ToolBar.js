@@ -11,7 +11,9 @@ class ToolBar extends React.Component {
   }
 
   rotateHandler = () => {
+    this.props.showProcessing(true);
     this.props.rotateImage();
+    this.props.showProcessing(false);
     document.getElementById("toolBar").scrollIntoView();
   };
 

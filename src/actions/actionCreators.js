@@ -70,6 +70,13 @@ export function makePDF() {
   }
 }
 
+export const RESET_REDRAW_FLAG = "RESET_REDRAW_FLAG";
+export function resetRedrawFlag() {
+  return {
+    type: RESET_REDRAW_FLAG
+  }
+}
+
 export const ROTATE_IMAGE = "ROTATE_IMAGE";
 export function rotateImage() {
   return {
@@ -112,6 +119,16 @@ export function setErrorMessage(msg) {
     type: SET_ERROR_MESSAGE,
     msg,
   };
+}
+
+// put up some sort of screen or icon or animation
+// to show that image processing is in progress
+export const SHOW_PROCESSING = "SHOW_PROCESSING";
+export function showProcessing(val) {
+  return {
+    type: SHOW_PROCESSING,
+    val
+  }
 }
 
 // undo the last action - ctx.restore()

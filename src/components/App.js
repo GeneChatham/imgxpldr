@@ -3,7 +3,7 @@ import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
 import BadFileMessage from "./BadFileMessage";
-import ExportButton from "./ExportButton";
+// import ExportButton from "./ExportButton";
 import FileSelector from "./FileSelector";
 import Preview from "./Preview";
 import ToolBar from "./ToolBar";
@@ -51,10 +51,10 @@ class App extends React.Component {
         {this.props.app.message && (
           <BadFileMessage message={this.props.app.message} />
         )}
-        {this.props.app.currentPixels && <Preview {...this.props} />}
-        {this.props.app.currentPixels && <ToolTabs {...this.props} />}
+        {this.props.app.currentCanvas && <Preview {...this.props} />}
+        {this.props.app.currentCanvas && <ToolTabs {...this.props} />}
         {this.props.app.toolset && <ToolBar {...this.props} />}
-        {this.props.app.currentPixels && <ExportButton makePDF={this.props.makePDF}/>}
+        {/* {this.props.app.currentCanvas && <ExportButton makePDF={this.props.makePDF}/>} */}
       </div>
     );
   }

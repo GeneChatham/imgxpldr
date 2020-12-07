@@ -12,21 +12,28 @@ class Preview extends React.Component {
     //   document.getElementById("previewCanvas"),
     //   "preview"
     // );
+    // this.drawDebug();
     this.drawHidden();
     this.drawPreview();
   }
 
   componentDidUpdate(prevProps) {
     // Redraw the canvases if the image has changed or the
-    // viewport size has changed.
-    if (
-      prevProps.app.saveStack.length !== this.props.app.saveStack.length ||
-      prevProps.app.viewportWidth !== this.props.app.viewportWidth ||
-      prevProps.app.pdfCanvas !== this.props.app.pdfCanvas
-    ) {
+    // viewport size has changed, or showProcessing has changed.
+    if (this.props.app.redrawFlag === true) {
+      // console.log(prevProps.app.showProcessing, this.props.app.showProcessing);
+      // this.drawDebug();
       this.drawHidden();
       this.drawPreview();
     }
+  }
+
+  drawDebug() {
+    const debugCanvas = document.getElementById("debugCanvas");
+    debugCanvas.width = this.props.app.debugCanvas.width;
+    debugCanvas.height = this.props.app.debugCanvas.height;
+    const debugCTX = debugCanvas.getContext("2d");
+    debugCTX.drawImage(this.props.app.debugCanvas, 0, 0);
   }
 
   drawHidden() {
@@ -45,21 +52,33 @@ class Preview extends React.Component {
       hiddenCanvas.height = this.props.app.pdfCanvas.height;
       hiddenCTX.drawImage(this.props.app.pdfCanvas, 0, 0);
     } else {
-      hiddenCTX.putImageData(this.props.app.currentPixels, 0, 0);
+      // hiddenCTX.putImageData(this.props.app.currentPixels, 0, 0);
+      hiddenCTX.drawImage(this.props.app.currentCanvas, 0, 0);
     }
-    // hiddenCTX.drawImage(this.props.app.originalImage, 0, 0);
   }
 
   drawPreview() {
     const previewCanvas = document.getElementById("previewCanvas");
     previewCanvas.width = this.props.app.previewWidth;
     previewCanvas.height = this.props.app.previewHeight;
-    const scaleFactor =
-      previewCanvas.width / this.props.app.currentPixels.width;
     const previewCTX = previewCanvas.getContext("2d");
-    previewCTX.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
-    // previewCTX.putImageData(this.props.app.currentPixels, 0, 0);
-    previewCTX.drawImage(document.getElementById("hiddenCanvas"), 0, 0);
+    previewCTX.drawImage(
+      this.props.app.currentCanvas,
+      0,
+      0,
+      previewCanvas.width,
+      previewCanvas.height
+    );
+    // const scaleFactor =
+    //   previewCanvas.width / this.props.app.currentPixels.width;
+    // previewCTX.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
+    // // previewCTX.putImageData(this.props.app.currentPixels, 0, 0);
+    // previewCTX.drawImage(this.props.app.currentCanvas, 0, 0);
+    // // if(this.props.app.showProcessing) {
+    // //   console.log(`got here to show processing.`)
+    // //   const img = <img src={favicon} alt="processing"/>
+    // //   previewCTX.drawImage(img, 0, 0);
+    // // }
   }
 
   render() {
@@ -68,8 +87,10 @@ class Preview extends React.Component {
         {/* {this.props.app.hiddenCanvas} */}
         <canvas
           id="hiddenCanvas"
-          width={this.props.app.currentPixels.width}
-          height={this.props.app.currentPixels.height}
+          width="800"
+          height="800"
+          // width={this.props.app.currentPixels.width}
+          // height={this.props.app.currentPixels.height}
         ></canvas>
         <canvas
           id="previewCanvas"
@@ -78,6 +99,12 @@ class Preview extends React.Component {
         >
           preview image here
         </canvas>
+        {/* <canvas 
+        id="debugCanvas"
+        width={this.props.app.debugCanvas.width}
+        height={this.props.app.debugCanvas.height} >
+          debug canvas here
+        </canvas> */}
       </div>
     );
   }

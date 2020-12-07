@@ -12,9 +12,11 @@ import {
   LOAD_ORIGINAL_IMAGE,
   MAKE_PDF,
   ROTATE_IMAGE,
+  RESET_REDRAW_FLAG,
   SELECT_TOOLS,
   SET_ERROR_MESSAGE,
   SET_VIEWPORT_SIZE,
+  SHOW_PROCESSING,
   UNDO,
   UPDATE_PAPER_SIZE,
   UPDATE_POSTER_HEIGHT,
@@ -24,40 +26,105 @@ import {
 
 import * as filters from "../helpers/filters";
 
-import * as transforms from "../helpers/transforms";
+// import * as transforms from "../helpers/transforms";
 
-function applyFilter(pixels, filter) {
+function applyFilter(currentCanvas, filter) {
   let filteredPixels = null;
-  const pixelsCopy = new ImageData(
-    new Uint8ClampedArray(pixels.data),
-    pixels.width,
-    pixels.height
+  const ctx = currentCanvas.getContext("2d");
+  const pixelsCopy = ctx.getImageData(
+    0,
+    0,
+    currentCanvas.width,
+    currentCanvas.height
   );
+  // const pixelsCopy = new ImageData(
+  //   new Uint8ClampedArray(pixels.data),
+  //   pixels.width,
+  //   pixels.height
+  // );
   switch (filter) {
     case "GRAYSCALE":
       filteredPixels = filters.grayscale(pixelsCopy);
       break;
     default:
-      filteredPixels = pixels;
+      filteredPixels = pixelsCopy;
   }
-  return filteredPixels;
+  const filteredCanvas = document.createElement("canvas");
+  filteredCanvas.width = filteredPixels.width;
+  filteredCanvas.height = filteredPixels.height;
+  const filteredCTX = filteredCanvas.getContext("2d");
+  filteredCTX.putImageData(filteredPixels, 0, 0);
+  return filteredCanvas;
 }
 
-function buildPDF(canvases) {
+// function buildCurrentCanvas(pixels) {
+//   const canvas = document.createElement("canvas");
+//   canvas.width = pixels.width;
+//   canvas.height = pixels.height;
+//   const ctx = canvas.getContext("2d");
+//   ctx.putImageData(pixels, 0, 0);
+//   return canvas;
+// }
+
+function buildDebugCanvas(originalCanvas) {
+  const debugCanvas = document.createElement("canvas");
+  debugCanvas.width = originalCanvas.width;
+  debugCanvas.height = originalCanvas.height;
+  const debugCTX = debugCanvas.getContext("2d");
+  debugCTX.drawImage(originalCanvas, 0, 0);
+  return debugCanvas;
+}
+
+function buildPDF(canvases, paperSize) {
   console.log(`building PDF...`);
+  // check for portrait or lanscape orientation of
+  // canvases, then orient paper accordingly
+  const paperDimensions = [];
+  let printWidth = "";
+  let printHeight = "";
+  let orientation = "portrait";
+  if (canvases[0].width < canvases[0].height) {
+    // portrait
+    paperDimensions.push(paperSize.width, paperSize.height);
+    printWidth = paperSize.width - 1;
+    printHeight = paperSize.height - 1;
+  } else {
+    // lanscape
+    paperDimensions.push(paperSize.height, paperSize.width);
+    orientation = "landscape";
+    printWidth = paperSize.height - 1;
+    printHeight = paperSize.width - 1;
+  }
+  // console.log(`paperDimensions:`);
+  // console.log(paperDimensions);
+  // create a new pdf
   const doc = new jsPDF({
-    format: [8.5, 11],
-    unit: "in",
+    format: paperDimensions,
+    orientation: orientation,
+    unit: paperSize.units,
   });
+  // console.log(`doc:`);
+  // console.log(doc);
+  // console.log(`doc.getFontList():`);
+  // console.log(doc.getFontList());
+  doc.setFont("Helvetica", "BoldOblique");
+  doc.text("IMGXPLDR", 2, 2);
   canvases.forEach((canvas, i) => {
-    doc.addPage({
-      format: [8.5, 11],
-      orientation: "portrait",
-    })
-    doc.addImage(canvas, "PNG", 0.5, 0.5, 7.5, 10, i, "NONE", 0);
+    doc.addPage();
+    doc.addImage(
+      canvas,
+      "PNG",
+      0.5,
+      0.5,
+      printWidth,
+      printHeight,
+      i,
+      "NONE",
+      0
+    );
   });
-  doc.save("testCat.pdf");
-};
+  doc.save("imgxpldr.pdf");
+}
 
 function calcCanvasSize(vw, vh, imgWidth, imgHeight) {
   // console.log(`imgWidth: ${imgWidth}`);
@@ -93,6 +160,15 @@ function calcPageLayout(
   return { excessWide, excessHigh, pagesWide, pagesHigh, totalPages };
 }
 
+// return a poster size based on image pixel size
+// and a printing resolution
+function calcPosterSize(pixelsWide, pixelsHigh, printResolution = 150) {
+  return {
+    w: (pixelsWide / printResolution).toFixed(2),
+    h: (pixelsHigh / printResolution).toFixed(2),
+  };
+}
+
 // function fitToPoster(pixels, posterWidth, posterHeight, posterUnits) {
 //   const fittedPixels = transforms.fitToPoster(
 //     pixels,
@@ -103,14 +179,31 @@ function calcPageLayout(
 //   return fittedPixels;
 // }
 
-function loadPixels(img) {
+// Take and image and put it on a canvas.
+// Make that canvas the same size in pixels as the image.
+function loadImage(img) {
   const canvas = document.createElement("canvas");
   canvas.width = img.width;
   canvas.height = img.height;
   const ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0);
-  const imageData = ctx.getImageData(0, 0, img.width, img.height);
-  return imageData;
+  // const imageData = ctx.getImageData(0, 0, img.width, img.height);
+  return canvas;
+}
+
+// enlarge the canvas image to fit the desired poster size
+function embiggenCanvas(canvas, width, height, units) {
+  const biggerCanvas = document.createElement("canvas");
+  // assume units are inches for now
+  // plan on 150dpi for printing for now
+  biggerCanvas.width = width * 150;
+  biggerCanvas.height = height * 150;
+  const biggerCTX = biggerCanvas.getContext("2d");
+  biggerCTX.imageSmoothingEnabled = false;
+  biggerCTX.webkitImageSmoothingEnabled = false;
+  biggerCTX.msImageSmoothingEnabled = false;
+  biggerCTX.drawImage(canvas, 0, 0, biggerCanvas.width, biggerCanvas.height);
+  return biggerCanvas;
 }
 
 function makeCanvases(imgData, units, paperSize, posterWidth, posterHeight) {
@@ -118,8 +211,8 @@ function makeCanvases(imgData, units, paperSize, posterWidth, posterHeight) {
   const MARGIN = 0.5;
   let finalLayout = {};
   // assume portrait layout to begin
-  const paperWidth = paperSize.split("x")[0];
-  const paperHeight = paperSize.split("x")[1];
+  const paperWidth = paperSize.width;
+  const paperHeight = paperSize.height;
   let printableWidth = paperWidth - MARGIN * 2;
   let printableHeight = paperHeight - MARGIN * 2;
   console.log(
@@ -141,22 +234,30 @@ function makeCanvases(imgData, units, paperSize, posterWidth, posterHeight) {
     // reassign height and width for landscape layout
     printableWidth = paperHeight - MARGIN * 2;
     printableHeight = paperWidth - MARGIN * 2;
-    finalLayout = landscapeLayout;
+    finalLayout = Object.assign({}, landscapeLayout, {
+      orientation: "LANDSCAPE",
+    });
   } else {
-    finalLayout = portraitLayout;
+    finalLayout = Object.assign({}, portraitLayout, {
+      orientation: "PORTRAIT",
+    });
   }
   console.log(`finalLayout: `, finalLayout);
   // create one big canvas to represent the image printed with excess whitespace
+  // find total printable area across pages
   const totalPagesWidth = finalLayout.pagesWide * printableWidth;
   const totalPagesHeight = finalLayout.pagesHigh * printableHeight;
   console.log(
-    `totalPagesWidth: ${totalPagesWidth}, totalPagesHeight: ${totalPagesHeight}`
+    `totalPagesWidth: ${totalPagesWidth} ${paperSize.units}, totalPagesHeight: ${totalPagesHeight} ${paperSize.units}`
   );
+  // calc ratios of printable area across pages to poster size
   const pagesToPosterRatioWidth = totalPagesWidth / posterWidth;
   const pagesToPosterRatioHeight = totalPagesHeight / posterHeight;
   console.log(
     `ratioWidth: ${pagesToPosterRatioWidth}, ratioHeight: ${pagesToPosterRatioHeight}`
   );
+  // create a new oversized canvas into which the image can be placed.
+  // extra whitespace arround edges represents extra paper.
   const bigCanvas = document.createElement("canvas");
   bigCanvas.width = Math.round(imgData.width * pagesToPosterRatioWidth);
   bigCanvas.height = Math.round(imgData.height * pagesToPosterRatioHeight);
@@ -168,19 +269,26 @@ function makeCanvases(imgData, units, paperSize, posterWidth, posterHeight) {
   // starting at top left, iterate through each row of pages.
   const pageCanvases = [];
   const chunkWidth = bigCanvas.width / finalLayout.pagesWide;
+  console.log(`chunkWidth:`);
+  console.log(chunkWidth);
   const chunkHeight = bigCanvas.height / finalLayout.pagesHigh;
-  for (let i = 0; i < totalPagesHeight; i += chunkHeight) {
-    for (let j = 0; j < totalPagesWidth; j += chunkWidth) {
+  console.log(`chunkHeight:`);
+  console.log(chunkHeight);
+  for (let i = 0; i < bigCanvas.height; i += chunkHeight) {
+    for (let j = 0; j < bigCanvas.width; j += chunkWidth) {
       const tempCanvas = document.createElement("canvas");
       tempCanvas.width = chunkWidth;
       tempCanvas.height = chunkHeight;
       const tempCTX = tempCanvas.getContext("2d");
-      const startX = chunkWidth * j;
-      const startY = chunkHeight * i;
+      tempCTX.imageSmoothingEnabled = false;
+      tempCTX.webkitImageSmoothingEnabled = false;
+      tempCTX.msImageSmoothingEnabled = false;
+      const startX = j;
+      const startY = i;
       tempCTX.putImageData(
         imgData,
-        0,
-        0,
+        -startX,
+        -startY,
         startX,
         startY,
         chunkWidth,
@@ -192,17 +300,58 @@ function makeCanvases(imgData, units, paperSize, posterWidth, posterHeight) {
   return { bigCanvas, pageCanvases };
 }
 
-function rotateImage(pixels) {
-  const rotatedPixels = transforms.rotate(pixels);
-  return rotatedPixels;
+function parsePaperSize(val) {
+  console.log(`parsePaperSize for: ${val}`);
+  switch (val) {
+    case "8.5x11":
+      return { width: 8.5, height: 11, units: "in" };
+    default:
+      // default to standard letter
+      return { width: 8.5, height: 11, units: "in" };
+  }
+}
+
+// function rotateImage(pixels) {
+//   const rotatedPixels = transforms.rotate(pixels);
+//   return rotatedPixels;
+// }
+
+// as ImageData object cannot be put into a transformed (rotated)
+// canvas, first draw image data to canvas1.  Then rotate canvas2 context
+// and draw canvas1.  Finally, extract the new pixel ImageData from canvas2.
+// Copy the currentCanvas to a new, rotated canvas to avoid mutating
+// the currentCanvas.  Return that new rotated canvas.
+function rotateImage(currentCanvas) {
+  const rotatedCanvas = document.createElement("canvas");
+  rotatedCanvas.width = currentCanvas.height;
+  rotatedCanvas.height = currentCanvas.width;
+  const ctxR = rotatedCanvas.getContext("2d");
+  // save the unrotated context of the canvas so we can restore it later
+  ctxR.save();
+  // // move to the center of the canvas
+  ctxR.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2);
+  // // rotate the canvas to the specified degrees
+  ctxR.rotate(Math.PI / 2);
+  // // draw the image
+  // // since the context is rotated, the image will be rotated also
+  ctxR.drawImage(
+    currentCanvas,
+    -rotatedCanvas.height / 2,
+    -rotatedCanvas.width / 2
+  );
+  // ctx2.putImageData(bitmap, -canvas.height / 2, -canvas.width /2);
+  ctxR.restore();
+  // return canvas2;
+  return rotatedCanvas;
 }
 
 function app(state = {}, action) {
   switch (action.type) {
     case APPLY_FILTER:
-      const filtered = applyFilter(state.currentPixels, action.filterName);
+      const filtered = applyFilter(state.currentCanvas, action.filterName);
       return Object.assign({}, state, {
-        currentPixels: filtered,
+        currentCanvas: filtered,
+        redrawFlag: true,
         saveStack: state.saveStack.concat([filtered]),
       });
     case FIT_TO_POSTER:
@@ -223,24 +372,32 @@ function app(state = {}, action) {
         fileData: action.data,
       });
     case LOAD_ORIGINAL_IMAGE:
-      const currentPixels = loadPixels(action.img);
+      const currentCanvas = loadImage(action.img);
+      // const currentCanvas = buildCurrentCanvas(currentPixels);
       const previewSize = calcCanvasSize(
         state.viewportWidth,
         state.viewportHeight,
-        currentPixels.width,
-        currentPixels.height
+        currentCanvas.width,
+        currentCanvas.height
+      );
+      const posterSize = calcPosterSize(
+        currentCanvas.width,
+        currentCanvas.height
       );
       return Object.assign({}, state, {
-        currentPixels: currentPixels,
+        currentCanvas: currentCanvas,
+        // currentPixels: currentPixels,
+        debugCanvas: buildDebugCanvas(currentCanvas),
         previewWidth: previewSize.w,
         previewHeight: previewSize.h,
         message: null,
         originalImage: action.img,
-        paperSize: "8.5x11",
-        posterHeight: 0,
+        paperSize: { width: 8.5, height: 11, units: "in" },
+        posterHeight: posterSize.h,
         posterUnits: "inches",
-        posterWidth: 0,
-        saveStack: [currentPixels],
+        posterWidth: posterSize.w,
+        redrawFlag: true,
+        saveStack: [currentCanvas],
       });
     case MAKE_PDF:
       const pdfCanvas = makeCanvases(
@@ -250,13 +407,17 @@ function app(state = {}, action) {
         state.posterWidth,
         state.posterHeight
       );
-      buildPDF(pdfCanvas.pageCanvases);
+      buildPDF(pdfCanvas.pageCanvases, state.paperSize);
       return Object.assign({}, state, {
         pdfCanvas: pdfCanvas.bigCanvas,
         pageCanvases: pdfCanvas.pageCanvases,
       });
+    case RESET_REDRAW_FLAG:
+      return Object.assign({}, state, {
+        redrawFlag: false,
+      });
     case ROTATE_IMAGE:
-      const rotated = rotateImage(state.currentPixels);
+      const rotated = rotateImage(state.currentCanvas);
       const rotatedPreviewSize = calcCanvasSize(
         state.viewportWidth,
         state.viewportHeight,
@@ -264,9 +425,10 @@ function app(state = {}, action) {
         rotated.height
       );
       return Object.assign({}, state, {
-        currentPixels: rotated,
+        currentCanvas: rotated,
         previewWidth: rotatedPreviewSize.w,
         previewHeight: rotatedPreviewSize.h,
+        redrawFlag: true,
         saveStack: state.saveStack.concat([rotated]),
       });
     case SELECT_TOOLS:
@@ -279,8 +441,8 @@ function app(state = {}, action) {
         currentImage: null,
       });
     case SET_VIEWPORT_SIZE:
-      const tempImgSize = state.currentPixels
-        ? { w: state.currentPixels.width, h: state.currentPixels.height }
+      const tempImgSize = state.currentCanvas
+        ? { w: state.currentCanvas.width, h: state.currentCanvas.height }
         : { w: undefined, h: undefined };
       const tempPreviewSize = calcCanvasSize(
         action.vw,
@@ -293,47 +455,80 @@ function app(state = {}, action) {
         viewportHeight: action.vh,
         previewWidth: tempPreviewSize.w,
         previewHeight: tempPreviewSize.h,
+        redrawFlag: true,
+      });
+    case SHOW_PROCESSING:
+      return Object.assign({}, state, {
+        showProcessing: action.val,
       });
     case UNDO:
       const undoStack = [].concat(state.saveStack);
       if (undoStack.length > 1) {
         undoStack.pop();
       }
-      const undoneImageData = undoStack[undoStack.length - 1];
+      const undoneCanvas = undoStack[undoStack.length - 1];
       const undonePreviewSize = calcCanvasSize(
         state.viewportWidth,
         state.viewportHeight,
-        undoneImageData.width,
-        undoneImageData.height
+        undoneCanvas.width,
+        undoneCanvas.height
       );
       return Object.assign({}, state, {
-        currentPixels: undoneImageData,
+        currentCanvas: undoneCanvas,
         previewWidth: undonePreviewSize.w,
         previewHeight: undonePreviewSize.h,
+        redrawFlag: true,
         saveStack: undoStack,
       });
     case UPDATE_PAPER_SIZE:
+      const paperDimensions = parsePaperSize(action.val);
       return Object.assign({}, state, {
-        paperSize: action.val,
+        paperSize: paperDimensions,
       });
     case UPDATE_POSTER_HEIGHT:
-      const linkedWidth =
-        action.val * (state.currentPixels.width / state.currentPixels.height);
-      return Object.assign({}, state, {
-        posterHeight: +action.val,
-        posterWidth: linkedWidth.toFixed(2),
-      });
+      if (!isNaN(Number(action.val)) && Number(action.val) > 0) {
+        const linkedWidth =
+          Number(action.val) *
+          (state.currentCanvas.width / state.currentCanvas.height);
+        return Object.assign({}, state, {
+          currentCanvas: embiggenCanvas(
+            state.currentCanvas,
+            linkedWidth,
+            action.val,
+            state.posterUnits
+          ),
+          posterHeight: action.val,
+          posterWidth: linkedWidth.toFixed(2),
+        });
+      } else {
+        return Object.assign({}, state, {
+          posterHeight: action.val,
+        });
+      }
     case UPDATE_POSTER_UNITS:
       return Object.assign({}, state, {
         posterUnits: action.val,
       });
     case UPDATE_POSTER_WIDTH:
-      const linkedHeight =
-        action.val / (state.currentPixels.width / state.currentPixels.height);
-      return Object.assign({}, state, {
-        posterHeight: linkedHeight.toFixed(2),
-        posterWidth: +action.val,
-      });
+      if (!isNaN(Number(action.val)) && Number(action.val) > 0) {
+        const linkedHeight =
+          Number(action.val) /
+          (state.currentCanvas.width / state.currentCanvas.height);
+        return Object.assign({}, state, {
+          currentCanvas: embiggenCanvas(
+            state.currentCanvas,
+            action.val,
+            linkedHeight,
+            state.posterUnits
+          ),
+          posterHeight: linkedHeight.toFixed(2),
+          posterWidth: action.val,
+        });
+      } else {
+        return Object.assign({}, state, {
+          posterWidth: action.val,
+        });
+      }
     default:
       return state;
   }
