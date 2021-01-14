@@ -4,6 +4,7 @@ import { jsPDF } from "jspdf";
 
 import {
   APPLY_FILTER,
+  APPLY_OVERLAY,
   // CONNECT_CANVAS,
   // DRAW_PREVIEW,
   // DRAW_HIDDEN,
@@ -15,6 +16,7 @@ import {
   RESET_REDRAW_FLAG,
   SELECT_TOOLS,
   SET_ERROR_MESSAGE,
+  SET_PREVIEW_SCALE,
   SET_VIEWPORT_SIZE,
   SHOW_PROCESSING,
   UNDO,
@@ -25,6 +27,8 @@ import {
 } from "../actions/actionCreators";
 
 import * as filters from "../helpers/filters";
+
+import circle from "../images/overlays/circle.png";
 
 // import * as transforms from "../helpers/transforms";
 
@@ -55,6 +59,39 @@ function applyFilter(currentCanvas, filter) {
   const filteredCTX = filteredCanvas.getContext("2d");
   filteredCTX.putImageData(filteredPixels, 0, 0);
   return filteredCanvas;
+}
+
+function applyOverlay(canvas) {
+  const overlayCanvas = document.createElement("canvas");
+  overlayCanvas.width = canvas.width;
+  overlayCanvas.height = canvas.height;
+  const overlayCTX = overlayCanvas.getContext("2d");
+  overlayCTX.imageSmoothingEnabled = false;
+  overlayCTX.webkitImageSmoothingEnabled = false;
+  overlayCTX.msImageSmoothingEnabled = false;
+  const screenCanvas = document.createElement("canvas");
+  screenCanvas.width = canvas.width * 16;
+  screenCanvas.height = canvas.height * 16;
+  const screenCTX = screenCanvas.getContext("2d");
+  screenCTX.imageSmoothingEnabled = false;
+  screenCTX.webkitImageSmoothingEnabled = false;
+  screenCTX.msImageSmoothingEnabled = false;
+  screenCTX.drawImage(canvas, 0, 0, screenCanvas.width, screenCanvas.height);
+  const screenImage = new Image();
+  screenImage.src = circle;
+  const pattern = screenCTX.createPattern(screenImage, "repeat");
+  screenCTX.fillStyle = pattern
+  screenCTX.fillRect(0, 0, screenCanvas.width, screenCanvas.height)
+  overlayCTX.drawImage(
+    screenCanvas,
+    0,
+    0,
+    overlayCanvas.width,
+    overlayCanvas.height
+  );
+  console.log(`screenCanvas:`)
+  console.log(screenCanvas)
+  return overlayCanvas;
 }
 
 // function buildCurrentCanvas(pixels) {
@@ -206,6 +243,12 @@ function embiggenCanvas(canvas, width, height, units) {
   return biggerCanvas;
 }
 
+// extract the pixel data from a canvas
+function getCurrentPixels(canvas) {
+  const ctx = canvas.getContext("2d");
+  return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
 function makeCanvases(imgData, units, paperSize, posterWidth, posterHeight) {
   // set print margins - same value top, bottom, and sides
   const MARGIN = 0.5;
@@ -351,8 +394,17 @@ function app(state = {}, action) {
       const filtered = applyFilter(state.currentCanvas, action.filterName);
       return Object.assign({}, state, {
         currentCanvas: filtered,
+        currentPixels: getCurrentPixels(filtered),
         redrawFlag: true,
         saveStack: state.saveStack.concat([filtered]),
+      });
+    case APPLY_OVERLAY:
+      const overlayed = applyOverlay(state.currentCanvas);
+      return Object.assign({}, state, {
+        currentCanvas: overlayed,
+        currentPixels: getCurrentPixels(overlayed),
+        redrawFlag: true,
+        saveStack: state.saveStack.concat([overlayed]),
       });
     case FIT_TO_POSTER:
       // const fitted = fitToPoster(
@@ -386,7 +438,7 @@ function app(state = {}, action) {
       );
       return Object.assign({}, state, {
         currentCanvas: currentCanvas,
-        // currentPixels: currentPixels,
+        currentPixels: getCurrentPixels(currentCanvas),
         debugCanvas: buildDebugCanvas(currentCanvas),
         previewWidth: previewSize.w,
         previewHeight: previewSize.h,
@@ -396,6 +448,7 @@ function app(state = {}, action) {
         posterHeight: posterSize.h,
         posterUnits: "inches",
         posterWidth: posterSize.w,
+        previewScale: "FIT",
         redrawFlag: true,
         saveStack: [currentCanvas],
       });
@@ -426,6 +479,7 @@ function app(state = {}, action) {
       );
       return Object.assign({}, state, {
         currentCanvas: rotated,
+        currentPixels: getCurrentPixels(rotated),
         previewWidth: rotatedPreviewSize.w,
         previewHeight: rotatedPreviewSize.h,
         redrawFlag: true,
@@ -439,6 +493,10 @@ function app(state = {}, action) {
       return Object.assign({}, state, {
         message: action.msg,
         currentImage: null,
+      });
+    case SET_PREVIEW_SCALE:
+      return Object.assign({}, state, {
+        previewScale: action.val,
       });
     case SET_VIEWPORT_SIZE:
       const tempImgSize = state.currentCanvas
@@ -475,6 +533,7 @@ function app(state = {}, action) {
       );
       return Object.assign({}, state, {
         currentCanvas: undoneCanvas,
+        currentPixels: getCurrentPixels(undoneCanvas),
         previewWidth: undonePreviewSize.w,
         previewHeight: undonePreviewSize.h,
         redrawFlag: true,
@@ -490,13 +549,15 @@ function app(state = {}, action) {
         const linkedWidth =
           Number(action.val) *
           (state.currentCanvas.width / state.currentCanvas.height);
+        // const embiggenedHeight = embiggenCanvas(
+        //   state.currentCanvas,
+        //   linkedWidth,
+        //   action.val,
+        //   state.posterUnits
+        // );
         return Object.assign({}, state, {
-          currentCanvas: embiggenCanvas(
-            state.currentCanvas,
-            linkedWidth,
-            action.val,
-            state.posterUnits
-          ),
+          // currentCanvas: embiggenedHeight,
+          // currentPixels: getCurrentPixels(embiggenedHeight),
           posterHeight: action.val,
           posterWidth: linkedWidth.toFixed(2),
         });
@@ -514,13 +575,15 @@ function app(state = {}, action) {
         const linkedHeight =
           Number(action.val) /
           (state.currentCanvas.width / state.currentCanvas.height);
+        // const embiggenedWidth = embiggenCanvas(
+        //   state.currentCanvas,
+        //   action.val,
+        //   linkedHeight,
+        //   state.posterUnits
+        // );
         return Object.assign({}, state, {
-          currentCanvas: embiggenCanvas(
-            state.currentCanvas,
-            action.val,
-            linkedHeight,
-            state.posterUnits
-          ),
+          // currentCanvas: embiggenedWidth,
+          // currentPixels: getCurrentPixels(embiggenedWidth),
           posterHeight: linkedHeight.toFixed(2),
           posterWidth: action.val,
         });

@@ -35,6 +35,12 @@ class ToolTabs extends React.Component {
           filters
         </div>
         <div
+          className={filtersClass}
+          onClick={this.props.selectTools.bind(null, "OVERLAY")}
+        >
+          overlay
+        </div>
+        <div
           className={sizePaperClass}
           onClick={this.props.selectTools.bind(null, "SIZE/PAPER")}
         >

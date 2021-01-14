@@ -16,9 +16,9 @@ class SizeAndPaper extends React.Component {
           <div className="sizeBlurb">
             Your original image is {this.props.app.originalImage.width} pixels
             wide by {this.props.app.originalImage.height} pixels high. Printed
-            at 150dpi, your original image would print to a size of{" "}
-            {(this.props.app.originalImage.width / 150).toFixed(2)}"(w) x{" "}
-            {(this.props.app.originalImage.height / 150).toFixed(2)}"(h).
+            at 150dpi (dots per inch), your original image would print to a size of{" "}
+            {(this.props.app.originalImage.width / 150).toFixed(2)}" x{" "}
+            {(this.props.app.originalImage.height / 150).toFixed(2)}".
           </div>
           <div>
             printer paper size:&nbsp;

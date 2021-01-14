@@ -54,13 +54,21 @@ class ToolBar extends React.Component {
         </div>
       </div>
     );
+    const overlay = (
+      <div id="toolBar"
+        onClick={this.props.applyOverlay}>
+        overlay stuff here
+      </div>
+    )
     switch (toolsetName) {
+      case "FILTERS":
+        return filters;
+      case "OVERLAY":
+        return overlay;
       case "ROTATE/CROP":
         return rotateAndCrop;
       case "SIZE/PAPER":
         return size;
-      case "FILTERS":
-        return filters;
       default:
         return null;
     }

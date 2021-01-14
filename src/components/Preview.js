@@ -13,7 +13,7 @@ class Preview extends React.Component {
     //   "preview"
     // );
     // this.drawDebug();
-    this.drawHidden();
+    // this.drawHidden();
     this.drawPreview();
   }
 
@@ -23,7 +23,7 @@ class Preview extends React.Component {
     if (this.props.app.redrawFlag === true) {
       // console.log(prevProps.app.showProcessing, this.props.app.showProcessing);
       // this.drawDebug();
-      this.drawHidden();
+      // this.drawHidden();
       this.drawPreview();
     }
   }
@@ -62,13 +62,19 @@ class Preview extends React.Component {
     previewCanvas.width = this.props.app.previewWidth;
     previewCanvas.height = this.props.app.previewHeight;
     const previewCTX = previewCanvas.getContext("2d");
-    previewCTX.drawImage(
-      this.props.app.currentCanvas,
-      0,
-      0,
-      previewCanvas.width,
-      previewCanvas.height
-    );
+    if (this.props.app.previewScale === "FIT") {
+      console.log(`should draw FIT...`);
+      previewCTX.drawImage(
+        this.props.app.currentCanvas,
+        0,
+        0,
+        previewCanvas.width,
+        previewCanvas.height
+      );
+    } else if (this.props.app.previewScale === "FULLSIZE") {
+      console.log(`should draw FULLSIZE...`);
+      previewCTX.drawImage(this.props.app.currentCanvas, 0, 0);
+    }
     // const scaleFactor =
     //   previewCanvas.width / this.props.app.currentPixels.width;
     // previewCTX.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
@@ -85,13 +91,13 @@ class Preview extends React.Component {
     return (
       <div className="Preview">
         {/* {this.props.app.hiddenCanvas} */}
-        <canvas
+        {/* <canvas
           id="hiddenCanvas"
           width="800"
           height="800"
           // width={this.props.app.currentPixels.width}
           // height={this.props.app.currentPixels.height}
-        ></canvas>
+        ></canvas> */}
         <canvas
           id="previewCanvas"
           width={this.props.app.previewWidth}
@@ -105,6 +111,20 @@ class Preview extends React.Component {
         height={this.props.app.debugCanvas.height} >
           debug canvas here
         </canvas> */}
+        <div className="previewScaleButtons">
+          <div
+            className="scaleButton"
+            onClick={this.props.setPreviewScale.bind(null, "FIT")}
+          >
+            scale preview to fit
+          </div>
+          <div
+            className="scaleButton"
+            onClick={this.props.setPreviewScale.bind(null, "FULLSIZE")}
+          >
+            preview actual size
+          </div>
+        </div>
       </div>
     );
   }

@@ -9,6 +9,14 @@ export function applyFilter(filterName) {
   };
 }
 
+// apply an overlay pixel screen
+export const APPLY_OVERLAY = "APPLY_OVERLAY";
+export function applyOverlay() {
+  return {
+    type: APPLY_OVERLAY,
+  };
+}
+
 // // set the DOM element for a canvas
 // export const CONNECT_CANVAS = "CONNECT_CANVAS";
 // export function connectCanvas(element, name) {
@@ -35,13 +43,13 @@ export function applyFilter(filterName) {
 //   };
 // }
 
-// use the new paper and poster size data to 
+// use the new paper and poster size data to
 // embiggen the image
 export const FIT_TO_POSTER = "FIT_TO_POSTER";
 export function fitToPoster() {
   return {
-    type: FIT_TO_POSTER
-  }
+    type: FIT_TO_POSTER,
+  };
 }
 
 // load the selected file for processing
@@ -66,15 +74,15 @@ export function loadOriginalImage(img, imageData) {
 export const MAKE_PDF = "MAKE_PDF";
 export function makePDF() {
   return {
-    type: MAKE_PDF
-  }
+    type: MAKE_PDF,
+  };
 }
 
 export const RESET_REDRAW_FLAG = "RESET_REDRAW_FLAG";
 export function resetRedrawFlag() {
   return {
-    type: RESET_REDRAW_FLAG
-  }
+    type: RESET_REDRAW_FLAG,
+  };
 }
 
 export const ROTATE_IMAGE = "ROTATE_IMAGE";
@@ -89,8 +97,8 @@ export const SCROLL_TO_BOTTOM = "SCROLL_TO_BOTTOM";
 export function scrollToBottom(element) {
   return {
     type: SCROLL_TO_BOTTOM,
-    element
-  }
+    element,
+  };
 }
 
 // Select which toolset to show below the preview image.
@@ -99,6 +107,15 @@ export function selectTools(toolset) {
   return {
     type: SELECT_TOOLS,
     toolset,
+  };
+}
+
+// Set the scale for the image preview canvas.
+export const SET_PREVIEW_SCALE = "SET_PREVIEW_SCALE";
+export function setPreviewScale(val) {
+  return {
+    type: SET_PREVIEW_SCALE,
+    val,
   };
 }
 
@@ -127,8 +144,8 @@ export const SHOW_PROCESSING = "SHOW_PROCESSING";
 export function showProcessing(val) {
   return {
     type: SHOW_PROCESSING,
-    val
-  }
+    val,
+  };
 }
 
 // undo the last action - ctx.restore()
@@ -144,8 +161,8 @@ export const UPDATE_PAPER_SIZE = "UPDATE_PAPER_SIZE";
 export function updatePaperSize(event) {
   return {
     type: UPDATE_PAPER_SIZE,
-    val: event.target.value
-  }
+    val: event.target.value,
+  };
 }
 
 // update the height of the final poster
@@ -153,8 +170,8 @@ export const UPDATE_POSTER_HEIGHT = "UPDATE_POSTER_HEIGHT";
 export function updatePosterHeight(event) {
   return {
     type: UPDATE_POSTER_HEIGHT,
-    val: event.target.value
-  }
+    val: event.target.value,
+  };
 }
 
 // update the units of measurement for the poster
@@ -162,8 +179,8 @@ export const UPDATE_POSTER_UNITS = "UPDATE_POSTER_UNITS";
 export function updatePosterUnits(event) {
   return {
     type: UPDATE_POSTER_UNITS,
-    val: event.target.value
-  }
+    val: event.target.value,
+  };
 }
 
 // update the width of the final poster
@@ -171,6 +188,6 @@ export const UPDATE_POSTER_WIDTH = "UPDATE_POSTER_WIDTH";
 export function updatePosterWidth(event) {
   return {
     type: UPDATE_POSTER_WIDTH,
-    val: event.target.value
-  }
+    val: event.target.value,
+  };
 }
